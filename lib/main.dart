@@ -31,7 +31,8 @@ void main() async {
 
   HydratedBloc.storage = await HydratedStorage.build(
     storageDirectory: HydratedStorageDirectory(
-        (await getApplicationDocumentsDirectory()).path),
+      (await getApplicationDocumentsDirectory()).path,
+    ),
   );
 
   DbLoader().initialiseDatabase().then((_) {
@@ -46,21 +47,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<ScrollBloc>(
-          create: (context) => ScrollBloc(),
-        ),
-        BlocProvider<ThemeBloc>(
-          create: (context) => ThemeBloc(),
-        ),
-        BlocProvider<FontBloc>(
-          create: (context) => FontBloc(),
-        ),
-        BlocProvider<ItalicBloc>(
-          create: (context) => ItalicBloc(),
-        ),
-        BlocProvider<SizeBloc>(
-          create: (context) => SizeBloc(),
-        ),
+        BlocProvider<ScrollBloc>(create: (context) => ScrollBloc()),
+        BlocProvider<ThemeBloc>(create: (context) => ThemeBloc()),
+        BlocProvider<FontBloc>(create: (context) => FontBloc()),
+        BlocProvider<ItalicBloc>(create: (context) => ItalicBloc()),
+        BlocProvider<SizeBloc>(create: (context) => SizeBloc()),
       ],
       child: BlocBuilder<ThemeBloc, bool>(
         builder: (context, state) {
@@ -78,7 +69,7 @@ class MyApp extends StatelessWidget {
               '/fonts': (context) => const FontsPage(),
               '/theme': (context) => const ThemePage(),
               '/about': (context) => const AboutPage(),
-              '/search': (context) => const SearchPage()
+              '/search': (context) => const SearchPage(),
             },
           );
         },
@@ -87,32 +78,79 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// if (exists) {
+//   await deleteDatabase(path);
+//   exists = false;
+// }
+
 class DbLoader {
   final String dataBaseName = Constants.mainBaseName;
 
   Future<void> initialiseDatabase() async {
-    var databasesPath = await getDatabasesPath();
-    String path = join(databasesPath, dataBaseName);
+    final databasesPath = await getDatabasesPath();
+    final path = join(databasesPath, dataBaseName);
+    final exists = await databaseExists(path);
 
-    bool exists = await databaseExists(path);
+    // Load asset bytes once
+    final ByteData data = await rootBundle.load(
+      join('assets/databases', dataBaseName),
+    );
+    final List<int> bytes = data.buffer.asUint8List(
+      data.offsetInBytes,
+      data.lengthInBytes,
+    );
 
-    // if (exists) {
-    //   await deleteDatabase(path);
-    //   exists = false;
-    // }
-
+    // If DB doesn't exist, just copy asset
     if (!exists) {
       try {
         await Directory(dirname(path)).create(recursive: true);
       } catch (_) {}
-
-      ByteData data =
-          await rootBundle.load(join("assets/databases", dataBaseName));
-
-      List<int> bytes =
-          data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-
       await File(path).writeAsBytes(bytes, flush: true);
+      //return;
+    } else {
+      // If exists
+      // Write asset to a temporary file so we can open and read its PRAGMA
+      final tmpDir = await getTemporaryDirectory();
+      final tmpPath = join(tmpDir.path, 'tmp_$dataBaseName');
+      await File(tmpPath).writeAsBytes(bytes, flush: true);
+
+      try {
+        final assetDb = await databaseFactory.openDatabase(tmpPath);
+        final existingDb = await databaseFactory.openDatabase(path);
+
+        final assetRes = await assetDb.rawQuery('PRAGMA user_version;');
+        final existingRes = await existingDb.rawQuery('PRAGMA user_version;');
+
+        final assetVersion = _extractVersion(assetRes);
+        final existingVersion = _extractVersion(existingRes);
+
+        await assetDb.close();
+        await existingDb.close();
+
+        debugPrint('ASSET_VER: $assetVersion');
+        debugPrint('EXISTING_VER: $existingVersion');
+
+        if (assetVersion > existingVersion) {
+          // Replace the existing DB with the newer asset DB
+          await File(path).writeAsBytes(bytes, flush: true);
+        }
+      } catch (_) {
+        // On any error, keep the existing DB (or handle logging as needed)
+      } finally {
+        try {
+          await File(tmpPath).delete();
+        } catch (_) {}
+      }
     }
+  }
+
+  int _extractVersion(List<Map<String, Object?>> res) {
+    if (res.isNotEmpty) {
+      final row = res.first;
+      final value = row.values.first;
+      if (value is int) return value;
+      if (value is String) return int.tryParse(value) ?? 0;
+    }
+    return 0;
   }
 }

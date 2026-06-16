@@ -1,0 +1,7 @@
+# set user version
+log in to sqlite3
+
+PRAGMA user_version = 1;
+
+# read user version
+PRAGMA user_version;
