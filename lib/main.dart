@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'l10n/app_localizations.dart';
 
 import 'about/page.dart';
 import 'bloc/bloc_font.dart';
@@ -53,15 +55,22 @@ class MyApp extends StatelessWidget {
         BlocProvider<ItalicBloc>(create: (context) => ItalicBloc()),
         BlocProvider<SizeBloc>(create: (context) => SizeBloc()),
       ],
-      child: BlocBuilder<ThemeBloc, bool>(
+      child: BlocBuilder<ThemeBloc, int>(
         builder: (context, state) {
           return MaterialApp(
-            locale: const Locale('en'),
             debugShowCheckedModeBanner: false,
-            title: 'The Revelation of John',
-            theme: lightTheme,
-            darkTheme: darkTheme,
-            themeMode: state ? ThemeMode.light : ThemeMode.dark,
+            onGenerateTitle: (context) =>
+                AppLocalizations.of(context)!.appTitle,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: AppLocalizations.supportedLocales,
+            theme: selectTheme(state),
+            // darkTheme: darkTheme,
+            // themeMode: state ? ThemeMode.light : ThemeMode.dark,
             initialRoute: '/root',
             routes: {
               '/root': (context) => const MainPage(),
@@ -78,79 +87,35 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// if (exists) {
-//   await deleteDatabase(path);
-//   exists = false;
-// }
-
 class DbLoader {
   final String dataBaseName = Constants.mainBaseName;
 
   Future<void> initialiseDatabase() async {
-    final databasesPath = await getDatabasesPath();
-    final path = join(databasesPath, dataBaseName);
-    final exists = await databaseExists(path);
+    var databasesPath = await getDatabasesPath();
+    String path = join(databasesPath, dataBaseName);
 
-    // Load asset bytes once
-    final ByteData data = await rootBundle.load(
-      join('assets/databases', dataBaseName),
-    );
-    final List<int> bytes = data.buffer.asUint8List(
-      data.offsetInBytes,
-      data.lengthInBytes,
-    );
+    bool exists = await databaseExists(path);
 
-    // If DB doesn't exist, just copy asset
+    //if (exists) {
+    //  await deleteDatabase(path);
+    //  exists = false;
+    //}
+
     if (!exists) {
       try {
         await Directory(dirname(path)).create(recursive: true);
       } catch (_) {}
+
+      ByteData data = await rootBundle.load(
+        join("assets/databases", dataBaseName),
+      );
+
+      List<int> bytes = data.buffer.asUint8List(
+        data.offsetInBytes,
+        data.lengthInBytes,
+      );
+
       await File(path).writeAsBytes(bytes, flush: true);
-      //return;
-    } else {
-      // If exists
-      // Write asset to a temporary file so we can open and read its PRAGMA
-      final tmpDir = await getTemporaryDirectory();
-      final tmpPath = join(tmpDir.path, 'tmp_$dataBaseName');
-      await File(tmpPath).writeAsBytes(bytes, flush: true);
-
-      try {
-        final assetDb = await databaseFactory.openDatabase(tmpPath);
-        final existingDb = await databaseFactory.openDatabase(path);
-
-        final assetRes = await assetDb.rawQuery('PRAGMA user_version;');
-        final existingRes = await existingDb.rawQuery('PRAGMA user_version;');
-
-        final assetVersion = _extractVersion(assetRes);
-        final existingVersion = _extractVersion(existingRes);
-
-        await assetDb.close();
-        await existingDb.close();
-
-        debugPrint('ASSET_VER: $assetVersion');
-        debugPrint('EXISTING_VER: $existingVersion');
-
-        if (assetVersion > existingVersion) {
-          // Replace the existing DB with the newer asset DB
-          await File(path).writeAsBytes(bytes, flush: true);
-        }
-      } catch (_) {
-        // On any error, keep the existing DB (or handle logging as needed)
-      } finally {
-        try {
-          await File(tmpPath).delete();
-        } catch (_) {}
-      }
     }
-  }
-
-  int _extractVersion(List<Map<String, Object?>> res) {
-    if (res.isNotEmpty) {
-      final row = res.first;
-      final value = row.values.first;
-      if (value is int) return value;
-      if (value is String) return int.tryParse(value) ?? 0;
-    }
-    return 0;
   }
 }

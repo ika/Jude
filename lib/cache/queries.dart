@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:sqflite/sqflite.dart';
 
+import '../cache/provider.dart';
 import '../constants.dart';
-import 'model.dart';
-import 'provider.dart';
+import './model.dart';
 
 // List<Cache> noneFound() {
 //   List<Cache> returnList = [];

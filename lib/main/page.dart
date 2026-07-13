@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:share_plus/share_plus.dart';
+import '../l10n/app_localizations.dart';
+import '../constants.dart';
 
 import '../bloc/bloc_font.dart';
 import '../bloc/bloc_italic.dart';
@@ -10,11 +12,10 @@ import '../bloc/bloc_scroll.dart';
 import '../bloc/bloc_size.dart';
 import '../cache/model.dart';
 import '../cache/page.dart';
-import '../constants.dart';
 import '../fonts/list.dart';
 import '../globals.dart';
-import 'model.dart';
-import 'queries.dart';
+import './model.dart';
+import './queries.dart';
 
 part 'bottom.dart';
 
@@ -76,6 +77,7 @@ class MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return FutureBuilder<List<Main>>(
       future: _mainFuture,
       builder: (context, AsyncSnapshot<List<Main>> snapshot) {
@@ -115,8 +117,11 @@ class MainPageState extends State<MainPage> {
                 ),
               ),
               title: Text(
-                Constants.projectName,
-                style: const TextStyle(fontWeight: FontWeight.w700),
+                loc.appTitle,
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
               ),
             ),
             drawer: MainDrawer(onReturnSuccess: onReturnSuccess),

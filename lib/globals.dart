@@ -1,3 +1,5 @@
+import 'dart:io';
+
 class Globals {
   static int navigatorDelay = 200;
   static int navigatorLongDelay = 400;
@@ -6,4 +8,6 @@ class Globals {
 
   static List bookMarkList = [];
   static List hightLightList = [];
+
+  static bool isShareEnabled = (Platform.isAndroid) ? true : false;
 }

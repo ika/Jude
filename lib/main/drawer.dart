@@ -7,6 +7,7 @@ class MainDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -19,7 +20,7 @@ class MainDrawer extends StatelessWidget {
                 baseline: 80,
                 baselineType: TextBaseline.alphabetic,
                 child: Text(
-                  'Index',
+                  loc.drawerIndex,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.primary,
                     fontSize: 32,
@@ -39,7 +40,7 @@ class MainDrawer extends StatelessWidget {
               color: Theme.of(context).colorScheme.primary,
             ),
             title: Text(
-              'Bookmarks',
+              loc.drawerBookmarks,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             dense: true,
@@ -67,7 +68,7 @@ class MainDrawer extends StatelessWidget {
               color: Theme.of(context).colorScheme.primary,
             ),
             title: Text(
-              'Highlights',
+              loc.drawerHighlights,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             dense: true,
@@ -94,7 +95,7 @@ class MainDrawer extends StatelessWidget {
               Icons.keyboard_arrow_right,
               color: Theme.of(context).colorScheme.primary,
             ),
-            title: Text('Search', style: Theme.of(context).textTheme.bodyLarge),
+            title: Text(loc.drawerSearch, style: Theme.of(context).textTheme.bodyLarge),
             dense: true,
             onTap: () {
               Future.delayed(
@@ -116,7 +117,7 @@ class MainDrawer extends StatelessWidget {
               Icons.keyboard_arrow_right,
               color: Theme.of(context).colorScheme.primary,
             ),
-            title: Text('Fonts', style: Theme.of(context).textTheme.bodyLarge),
+            title: Text(loc.drawerFonts, style: Theme.of(context).textTheme.bodyLarge),
             dense: true,
             onTap: () {
               Future.delayed(
@@ -140,7 +141,7 @@ class MainDrawer extends StatelessWidget {
               Icons.keyboard_arrow_right,
               color: Theme.of(context).colorScheme.primary,
             ),
-            title: Text('Theme', style: Theme.of(context).textTheme.bodyLarge),
+            title: Text(loc.drawerTheme, style: Theme.of(context).textTheme.bodyLarge),
             dense: true,
             onTap: () {
               Future.delayed(
@@ -162,7 +163,7 @@ class MainDrawer extends StatelessWidget {
               Icons.keyboard_arrow_right,
               color: Theme.of(context).colorScheme.primary,
             ),
-            title: Text('About', style: Theme.of(context).textTheme.bodyLarge),
+            title: Text(loc.drawerAbout, style: Theme.of(context).textTheme.bodyLarge),
             dense: true,
             onTap: () {
               Future.delayed(
@@ -175,32 +176,36 @@ class MainDrawer extends StatelessWidget {
               );
             },
           ),
-          ListTile(
-            leading: Icon(
-              Icons.share,
-              color: Theme.of(context).colorScheme.primary,
+          if (Globals.isShareEnabled)
+            ListTile(
+              leading: Icon(
+                Icons.share,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              trailing: Icon(
+                Icons.keyboard_arrow_right,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              title: Text(
+                loc.drawerShare,
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              dense: true,
+              onTap: () {
+                Navigator.pop(context);
+                _onShareLink(context);
+              },
             ),
-            trailing: Icon(
-              Icons.keyboard_arrow_right,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            title: Text('Share', style: Theme.of(context).textTheme.bodyLarge),
-            dense: true,
-            onTap: () {
-              Navigator.pop(context);
-              _onShareLink();
-            },
-          ),
         ],
       ),
     );
   }
 
-  void _onShareLink() async {
+  void _onShareLink(BuildContext context) async {
     String uri =
-        'https://play.google.com/store/apps/details?id=org.armstrong.ika.galatians';
+        'https://play.google.com/store/apps/details?id=org.armstrong.ika.${Constants.appName}';
     await SharePlus.instance.share(
-      ShareParams(title: 'Galatians', uri: Uri.parse(uri)),
+      ShareParams(title: AppLocalizations.of(context)!.appTitle, uri: Uri.parse(uri)),
     );
   }
 }

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../l10n/app_localizations.dart';
 
 import '../bloc/bloc_font.dart';
 import '../bloc/bloc_italic.dart';
 import '../bloc/bloc_scroll.dart';
 import '../bloc/bloc_size.dart';
-import '../bloc/bloc_theme.dart';
 import '../fonts/list.dart';
 import '../globals.dart';
 import '../main/model.dart';
@@ -22,41 +22,29 @@ class SearchPageState extends State<SearchPage> {
   List<Main> list = List<Main>.empty();
 
   Future<List<Main>>? filteredSearch;
-  Future<List<Main>>? blankSearch;
-  Future<List<Main>>? results;
+  final Future<List<Main>> blankSearch = Future.value([]);
 
-  late String enterdKeyWord;
-  late bool themeState;
-  late String contents;
+  String contents = '';
+  String submittedQuery = '';
 
   @override
   void initState() {
     super.initState();
-    blankSearch = Future.value([]);
     filteredSearch = blankSearch;
-    enterdKeyWord = '';
-    themeState = context.read<ThemeBloc>().state;
-    contents = '';
   }
 
-  Future<void> runFilter(String enterdKeyWord) async {
-    enterdKeyWord.isEmpty
-        ? results = blankSearch
-        : results = MainQueries().getSearchedValues(enterdKeyWord);
-
-    //   // Print a Future<List> from database
-    //   results?.then((List<Rev> list) {
-    //     for (var i = 0; i < list.length; i++) {
-    //       debugPrint(list[i].t.toString());
-    //     }
-    //   });
-
+  void runFilter(String keyword) {
+    final query = keyword.trim();
     setState(() {
-      filteredSearch = results;
+      submittedQuery = query;
+      filteredSearch = query.isEmpty
+          ? blankSearch
+          : MainQueries().getSearchedValues(query);
     });
   }
 
   Future emptyInputDialog(BuildContext context) async {
+    final loc = AppLocalizations.of(context)!;
     return showDialog<void>(
       context: context,
       barrierDismissible: true, // user must tap button!
@@ -71,11 +59,11 @@ class SearchPageState extends State<SearchPage> {
           },
         );
 
-        return const AlertDialog(
+        return AlertDialog(
           content: SingleChildScrollView(
             child: Center(
               child: Text(
-                'Enter a search text!',
+                loc.searchEnterTextPrompt,
                 textAlign: TextAlign.center,
               ),
             ),
@@ -123,7 +111,7 @@ class SearchPageState extends State<SearchPage> {
                 ? FontStyle.italic
                 : FontStyle.normal,
             fontSize: context.read<SizeBloc>().state,
-            color: (themeState) ? Colors.black : Colors.white,
+            color: Theme.of(context).colorScheme.primary,
           ),
           children: [
             TextSpan(
@@ -146,7 +134,7 @@ class SearchPageState extends State<SearchPage> {
                     ? FontStyle.italic
                     : FontStyle.normal,
                 fontSize: context.read<SizeBloc>().state,
-                color: themeState ? Colors.black : Colors.white,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
           ],
@@ -162,7 +150,7 @@ class SearchPageState extends State<SearchPage> {
                 ? FontStyle.italic
                 : FontStyle.normal,
             fontSize: context.read<SizeBloc>().state,
-            color: Theme.of(context).colorScheme.error,
+            color: Theme.of(context).colorScheme.primary,
           ),
         ),
       );
@@ -171,6 +159,7 @@ class SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(
@@ -191,8 +180,11 @@ class SearchPageState extends State<SearchPage> {
           ),
         ),
         title: Text(
-          'Search',
-          style: const TextStyle(fontWeight: FontWeight.w700),
+          loc.searchTitle,
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            color: Theme.of(context).colorScheme.onPrimary,
+          ),
         ),
         leading: GestureDetector(
           child: const Icon(Icons.arrow_back),
@@ -213,7 +205,7 @@ class SearchPageState extends State<SearchPage> {
               const SizedBox(height: 20),
               TextFormField(
                 decoration: InputDecoration(
-                  labelText: 'Search...',
+                  labelText: loc.searchPlaceholder,
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.search),
                     onPressed: () {
@@ -238,13 +230,16 @@ class SearchPageState extends State<SearchPage> {
                   builder: (context, AsyncSnapshot<List<Main>> snapshot) {
                     if (snapshot.hasData) {
                       list = snapshot.data!;
+                      if (submittedQuery.isNotEmpty && list.isEmpty) {
+                        return Center(child: Text(loc.searchNoResults));
+                      }
                       return ListView.separated(
                         itemCount: list.length,
                         itemBuilder: (BuildContext context, int index) {
                           return ListTile(
                             title: highLiteSearchWord(
                               list[index].t,
-                              contents,
+                              submittedQuery,
                               context,
                             ),
                             onTap: () {

@@ -12,106 +12,138 @@ class BottomSheetCacheWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final mq = MediaQuery.of(context);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    const tileContentPadding = EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: 8,
+    );
+    const leadingSize = 50.0;
 
     return SafeArea(
-      top: false, // keep top area if you prefer
+      top: false,
       child: Container(
-        // Limit height so the sheet won't overflow the screen
-        constraints: BoxConstraints(
-          maxHeight: mq.size.height * 0.9,
-        ),
-        // Add background & shape consistent with modal sheet
+        constraints: BoxConstraints(maxHeight: mq.size.height * 0.9),
         decoration: BoxDecoration(
-          color: Theme.of(context).canvasColor,
+          color: theme.canvasColor,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        // Ensure content is scrollable and padded for keyboard
         child: SingleChildScrollView(
           padding: EdgeInsets.only(bottom: mq.viewInsets.bottom),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              // important to avoid unbounded height
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Drag handle
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: 12),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).dividerColor,
-                      borderRadius: BorderRadius.circular(2),
+                Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          '${loc.appTitle} ${model.id}',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          model.text,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-
-                // Example body - replace with your actual content widgets
-                Text(model.text),
                 const SizedBox(height: 16),
+                Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: ListTile(
+                    contentPadding: tileContentPadding,
+                    leading: _CacheActionBadge(
+                      label: 'G',
+                      colorScheme: colorScheme,
+                      size: leadingSize,
+                    ),
+                    title: Text(loc.cacheGoToEntry),
+                    onTap: () async {
+                      Navigator.pop(context);
+                      context.read<ScrollBloc>().add(
+                        UpdateScroll(index: model.id! - 1),
+                      );
 
-                // Actions - wrap in Row with Flexible to avoid overflow
-                // Row(
-                //   children: [
-                //     Expanded(
-                //       child: ElevatedButton(
-                //         onPressed: () {
-                //           // example action
-                //           onReturnSuccess();
-                //           Navigator.of(context).pop();
-                //         },
-                //         child: const Text('Save'),
-                //       ),
-                //     ),
-                //     const SizedBox(width: 12),
-                //     Expanded(
-                //       child: OutlinedButton(
-                //         onPressed: () => Navigator.of(context).pop(),
-                //         child: const Text('Cancel'),
-                //       ),
-                //     ),
-                //   ],
-                // ),
-                ListTile(
-                  leading: const Icon(Icons.chevron_right),
-                  title: const Text('Go To Entry'),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    context.read<ScrollBloc>().add(UpdateScroll(index: model.id! -1));
-
-                    Navigator.pushNamed(context, '/root');
-                  },
+                      Navigator.pushNamed(context, '/root');
+                    },
+                  ),
                 ),
-                ListTile(
-                  leading: const Icon(Icons.delete_forever),
-                  title: const Text('Delete Entry'),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    confirmDialog(context, 'Delete this Entry?').then((value) {
-                      if (value) {
-                        var futureReturn =
-                            cacheQueries.deleteCacheEntry(model.id!);
-                        futureReturn.then((_) {
-                          onReturnSuccess();
-                          Future.delayed(
-                            Duration(microseconds: Globals.navigatorDelay),
-                            () {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Entry Deleted!'),
-                                  ),
-                                );
-                              }
-                            },
+                Card(
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: ListTile(
+                    contentPadding: tileContentPadding,
+                    leading: _CacheActionBadge(
+                      label: 'D',
+                      colorScheme: colorScheme,
+                      size: leadingSize,
+                    ),
+                    title: Text(loc.cacheDeleteEntry),
+                    onTap: () async {
+                      Navigator.pop(context);
+                      confirmDialog(context, loc.cacheDeleteEntryPrompt).then((
+                        value,
+                      ) {
+                        if (value) {
+                          final futureReturn = cacheQueries.deleteCacheEntry(
+                            model.id!,
                           );
-                        });
-                      }
-                    });
-                  },
+                          futureReturn.then((_) {
+                            onReturnSuccess();
+                            Future.delayed(
+                              Duration(microseconds: Globals.navigatorDelay),
+                              () {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(loc.cacheEntryDeleted),
+                                    ),
+                                  );
+                                }
+                              },
+                            );
+                          });
+                        }
+                      });
+                    },
+                  ),
                 ),
               ],
             ),
@@ -127,18 +159,56 @@ class BottomSheetCacheWidget extends StatelessWidget {
         title: Text(title),
         actions: [
           TextButton(
-            child: Text('Yes',
-                style: const TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(
+              AppLocalizations.of(context)!.commonYes,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             onPressed: () => Navigator.of(context).pop(true),
           ),
           TextButton(
-            child:
-                Text('No', style: const TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(
+              AppLocalizations.of(context)!.commonNo,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             onPressed: () => Navigator.of(context).pop(false),
           ),
         ],
       ),
       context: context,
+    );
+  }
+}
+
+class _CacheActionBadge extends StatelessWidget {
+  const _CacheActionBadge({
+    required this.label,
+    required this.colorScheme,
+    required this.size,
+  });
+
+  final String label;
+  final ColorScheme colorScheme;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Center(
+        child: Text(
+          label,
+          style: TextStyle(
+            color: colorScheme.onPrimaryContainer,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
+      ),
     );
   }
 }
