@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../l10n/app_localizations.dart';
 
 import '../bloc/bloc_font.dart';
 import '../bloc/bloc_italic.dart';
@@ -39,7 +38,6 @@ class _FontsPageState extends State<FontsPage> {
   }
 
   Future<dynamic> fontConfirmDialog(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
     return showDialog(
       context: context,
       barrierDismissible: true,
@@ -47,7 +45,7 @@ class _FontsPageState extends State<FontsPage> {
         return AlertDialog(
           title: Text(fontsList[fontNumber]),
           content: Text(
-            loc.fontsSamplePsalm23,
+            ps23,
             softWrap: true,
             style: TextStyle(
               fontFamily: fontsList[fontNumber],
@@ -78,7 +76,7 @@ class _FontsPageState extends State<FontsPage> {
                         },
                       );
                     },
-                    child: Text(loc.commonYes),
+                    child: Text('Yes'),
                   ),
                 ),
                 SizedBox(width: MediaQuery.of(context).size.width * 0.01),
@@ -88,7 +86,7 @@ class _FontsPageState extends State<FontsPage> {
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
-                    child: Text(loc.commonNo),
+                    child: Text('No'),
                   ),
                 ),
               ],
@@ -101,7 +99,6 @@ class _FontsPageState extends State<FontsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(
@@ -134,7 +131,7 @@ class _FontsPageState extends State<FontsPage> {
         ),
         //elevation: 16,
         title: Text(
-          loc.fontsSizeTitle(textSize.toInt().toString()),
+          "Font Size $textSize",
           style: TextStyle(
             fontWeight: FontWeight.w700,
             color: Theme.of(context).colorScheme.onPrimary,
@@ -212,7 +209,7 @@ class _FontsPageState extends State<FontsPage> {
         child: ListView.builder(
           itemCount: fontsList.length,
           itemBuilder: (BuildContext context, int index) {
-            final t = italicIsOn ? loc.commonItalic : loc.commonNormal;
+            String t = (italicIsOn) ? 'Italic' : 'Normal';
 
             return ListTile(
               title: Text(
@@ -222,7 +219,7 @@ class _FontsPageState extends State<FontsPage> {
                 ),
               ),
               subtitle: Text(
-                loc.fontsSampleShepherd,
+                'The Lord is my shepherd.',
                 style: TextStyle(
                   backgroundColor: (index == selectedFont)
                       ? Theme.of(context).colorScheme.tertiaryContainer
@@ -254,7 +251,7 @@ class _FontsPageState extends State<FontsPage> {
           FloatingActionButton.extended(
             heroTag: "italic",
             icon: Icon(italicIsOn ? Icons.format_italic : Icons.text_fields),
-            label: Text(italicIsOn ? loc.commonItalic : loc.commonNormal),
+            label: Text(italicIsOn ? "Italic" : "Normal"),
             onPressed: () {
               context.read<ItalicBloc>().add(
                 ChangeItalic(italicIsOn: !italicIsOn),
@@ -273,12 +270,11 @@ class _FontsPageState extends State<FontsPage> {
 
   void changeFontSize() {
     double tempSize = textSize;
-    final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(loc.fontsAdjustSizeTitle),
+          title: const Text("Adjust Font Size"),
           content: StatefulBuilder(
             builder: (context, setState) {
               return Row(
@@ -311,7 +307,7 @@ class _FontsPageState extends State<FontsPage> {
                 setState(() => textSize = tempSize);
                 Navigator.pop(context);
               },
-              child: Text(loc.commonOk, style: const TextStyle(fontSize: 20)),
+              child: const Text("OK", style: TextStyle(fontSize: 20)),
             ),
           ],
         );

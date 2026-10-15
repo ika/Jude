@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import '../l10n/app_localizations.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
 
-  String aboutContent(AppLocalizations loc) =>
-      """
-    <h1>${loc.aboutHeading}</h1>
-    <p>${loc.aboutBody}</p>
-    <h2>${loc.aboutProgrammerTranslatorHeading}</h2>
-     <p>${loc.aboutProgrammerTranslatorName}</p>
+  Future<String> getVersion() async {
+    // final packageInfo = await PackageInfo.fromPlatform();
+    // return packageInfo.version;
+    return '';
+  }
+
+  String aboutContent(String version) => """
+    <h1>About</h1>
+    <p>This is an independent translation of Jude's letter. It was translated from Latin using the text of the New Vulgate, while comparing it with other reputable translations.</p>
+    <h2>Programmer and Translator</h2>
+     <p>Ian K Armstrong, B.Th. (U.N.I.S.A)</p>
   """;
 
   Map<String, Style> htmlStyles(BuildContext context) => {
@@ -46,42 +50,51 @@ class AboutPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
-    return Scaffold(
-      appBar: AppBar(
-        iconTheme: IconThemeData(
-          color: Theme.of(context).colorScheme.inversePrimary,
-        ),
-        backgroundColor: Colors.transparent,
-        centerTitle: true,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Theme.of(context).colorScheme.primary,
-                Theme.of(context).colorScheme.surface,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+    return FutureBuilder<String>(
+      future: getVersion(),
+      builder: (context, snapshot) {
+        final version = snapshot.data ?? 'Unknown';
+        return Scaffold(
+          appBar: AppBar(
+            iconTheme: IconThemeData(
+              color: Theme.of(context).colorScheme.inversePrimary,
+            ),
+            backgroundColor: Colors.transparent,
+            centerTitle: true,
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).colorScheme.primary,
+                    Theme.of(context).colorScheme.surface,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
+            title: Text(
+              'About',
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.onPrimary,
+                //color: Theme.of(context).colorScheme.inversePrimary),
+              ),
             ),
           ),
-        ),
-        title: Text(
-          loc.aboutTitle,
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            color: Theme.of(context).colorScheme.onPrimary,
+          body: SingleChildScrollView(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Html(
+                  data: aboutContent(version),
+                  style: htmlStyles(context),
+                ),
+              ),
+            ),
           ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Html(data: aboutContent(loc), style: htmlStyles(context)),
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

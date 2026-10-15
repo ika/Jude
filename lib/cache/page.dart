@@ -1,12 +1,13 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../l10n/app_localizations.dart';
-import '../cache/queries.dart';
 
+import '../cache/queries.dart';
+import '../main/page.dart';
 import '../bloc/bloc_scroll.dart';
 import '../globals.dart';
-import 'model.dart';
+import './model.dart';
 
 part 'bottom.dart';
 
@@ -23,6 +24,8 @@ class CachePageState extends State<CachePage> {
   List<Cache> list = List<Cache>.empty();
   late Future<List<Cache>> _cacheFuture;
 
+  String titleText = (Globals.cacheSelector == 1) ? 'Bookmarks' : 'Highlights';
+
   @override
   void initState() {
     super.initState();
@@ -35,10 +38,6 @@ class CachePageState extends State<CachePage> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
-    final titleText = (Globals.cacheSelector == 1)
-        ? loc.drawerBookmarks
-        : loc.drawerHighlights;
     return FutureBuilder<List<Cache>>(
       future: _cacheFuture,
       builder: (context, AsyncSnapshot<List<Cache>> snapshot) {
@@ -88,11 +87,8 @@ class CachePageState extends State<CachePage> {
               actions: [
                 IconButton(
                   icon: const Icon(Icons.delete),
-                  onPressed: () =>
-                      confirmDialog(
-                        context,
-                        loc.cacheDeleteAllEntriesPrompt,
-                      ).then((value) {
+                  onPressed: () => confirmDialog(context, 'Delete All Entries?')
+                      .then((value) {
                         if (value) {
                           cacheQueries
                               .deleteCacheAllbyCode(Globals.cacheSelector)
@@ -110,9 +106,7 @@ class CachePageState extends State<CachePage> {
                                         context,
                                       ).showSnackBar(
                                         SnackBar(
-                                          content: Text(
-                                            loc.cacheAllEntriesDeleted,
-                                          ),
+                                          content: Text('All entries Deleted'),
                                         ),
                                       );
                                     }
@@ -133,7 +127,7 @@ class CachePageState extends State<CachePage> {
                     // contentPadding: const EdgeInsets.symmetric(
                     //     horizontal: 20.0, vertical: 10.0),
                     title: Text(
-                      loc.appTitle,
+                      titleText,
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                     subtitle: Row(
@@ -152,15 +146,7 @@ class CachePageState extends State<CachePage> {
                         ),
                       ],
                     ),
-                    // trailing: Icon(Icons.keyboard_arrow_right,
-                    //     color: Theme.of(context).colorScheme.primary,
-                    //     size: 20.0),
                     onTap: () {
-                      // context.read<ScrollBloc>().add(
-                      //       UpdateScroll(index: list[index].id! - 1),
-                      //     );
-                      // Navigator.of(context).pushNamed('/root');
-
                       final model = Cache(
                         id: list[index].id,
                         text: list[index].text,
@@ -210,14 +196,14 @@ Future confirmDialog(BuildContext context, String title) async {
       actions: [
         TextButton(
           child: Text(
-            AppLocalizations.of(context)!.commonYes,
+            'Yes',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           onPressed: () => Navigator.of(context).pop(true),
         ),
         TextButton(
           child: Text(
-            AppLocalizations.of(context)!.commonNo,
+            'No',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           onPressed: () => Navigator.of(context).pop(false),

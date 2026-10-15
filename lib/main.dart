@@ -1,13 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'l10n/app_localizations.dart';
 
 import 'about/page.dart';
 import 'bloc/bloc_font.dart';
@@ -32,9 +30,7 @@ void main() async {
   }
 
   HydratedBloc.storage = await HydratedStorage.build(
-    storageDirectory: HydratedStorageDirectory(
-      (await getApplicationDocumentsDirectory()).path,
-    ),
+    storageDirectory: HydratedStorageDirectory((await getApplicationDocumentsDirectory()).path),
   );
 
   DbLoader().initialiseDatabase().then((_) {
@@ -58,16 +54,9 @@ class MyApp extends StatelessWidget {
       child: BlocBuilder<ThemeBloc, int>(
         builder: (context, state) {
           return MaterialApp(
+            locale: const Locale('en'),
             debugShowCheckedModeBanner: false,
-            onGenerateTitle: (context) =>
-                AppLocalizations.of(context)!.appTitle,
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: AppLocalizations.supportedLocales,
+            title: 'Galatians',
             theme: selectTheme(state),
             // darkTheme: darkTheme,
             // themeMode: state ? ThemeMode.light : ThemeMode.dark,
@@ -96,24 +85,14 @@ class DbLoader {
 
     bool exists = await databaseExists(path);
 
-    //if (exists) {
-    //  await deleteDatabase(path);
-    //  exists = false;
-    //}
-
     if (!exists) {
       try {
         await Directory(dirname(path)).create(recursive: true);
       } catch (_) {}
 
-      ByteData data = await rootBundle.load(
-        join("assets/databases", dataBaseName),
-      );
+      ByteData data = await rootBundle.load(join("assets/databases", dataBaseName));
 
-      List<int> bytes = data.buffer.asUint8List(
-        data.offsetInBytes,
-        data.lengthInBytes,
-      );
+      List<int> bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
 
       await File(path).writeAsBytes(bytes, flush: true);
     }

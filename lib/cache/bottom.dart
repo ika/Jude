@@ -12,7 +12,6 @@ class BottomSheetCacheWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
     final mq = MediaQuery.of(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -27,7 +26,7 @@ class BottomSheetCacheWidget extends StatelessWidget {
       child: Container(
         constraints: BoxConstraints(maxHeight: mq.size.height * 0.9),
         decoration: BoxDecoration(
-          color: theme.canvasColor,
+          color: Theme.of(context).canvasColor,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: SingleChildScrollView(
@@ -38,6 +37,7 @@ class BottomSheetCacheWidget extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                BottomSheetDragHandle(),
                 Card(
                   elevation: 0,
                   shape: RoundedRectangleBorder(
@@ -48,32 +48,18 @@ class BottomSheetCacheWidget extends StatelessWidget {
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          '${loc.appTitle} ${model.id}',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          model.text,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      model.text,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
+                // Go To Entry action
                 Card(
                   elevation: 0,
                   shape: RoundedRectangleBorder(
@@ -84,22 +70,35 @@ class BottomSheetCacheWidget extends StatelessWidget {
                   ),
                   child: ListTile(
                     contentPadding: tileContentPadding,
-                    leading: _CacheActionBadge(
-                      label: 'G',
-                      colorScheme: colorScheme,
-                      size: leadingSize,
+                    leading: Container(
+                      width: leadingSize,
+                      height: leadingSize,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'G',
+                          style: TextStyle(
+                            color: colorScheme.onPrimaryContainer,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ),
                     ),
-                    title: Text(loc.cacheGoToEntry),
+                    title: const Text('Go To Entry'),
                     onTap: () async {
                       Navigator.pop(context);
                       context.read<ScrollBloc>().add(
-                        UpdateScroll(index: model.id! - 1),
-                      );
-
+                            UpdateScroll(index: model.id! - 1),
+                          );
                       Navigator.pushNamed(context, '/root');
                     },
                   ),
                 ),
+                // Delete Entry action
                 Card(
                   elevation: 0,
                   shape: RoundedRectangleBorder(
@@ -110,21 +109,31 @@ class BottomSheetCacheWidget extends StatelessWidget {
                   ),
                   child: ListTile(
                     contentPadding: tileContentPadding,
-                    leading: _CacheActionBadge(
-                      label: 'D',
-                      colorScheme: colorScheme,
-                      size: leadingSize,
+                    leading: Container(
+                      width: leadingSize,
+                      height: leadingSize,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'D',
+                          style: TextStyle(
+                            color: colorScheme.onPrimaryContainer,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ),
                     ),
-                    title: Text(loc.cacheDeleteEntry),
+                    title: const Text('Delete Entry'),
                     onTap: () async {
                       Navigator.pop(context);
-                      confirmDialog(context, loc.cacheDeleteEntryPrompt).then((
-                        value,
-                      ) {
+                      confirmDialog(context, 'Delete this Entry?').then((value) {
                         if (value) {
-                          final futureReturn = cacheQueries.deleteCacheEntry(
-                            model.id!,
-                          );
+                          var futureReturn =
+                              cacheQueries.deleteCacheEntry(model.id!);
                           futureReturn.then((_) {
                             onReturnSuccess();
                             Future.delayed(
@@ -132,8 +141,8 @@ class BottomSheetCacheWidget extends StatelessWidget {
                               () {
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(loc.cacheEntryDeleted),
+                                    const SnackBar(
+                                      content: Text('Entry Deleted!'),
                                     ),
                                   );
                                 }
@@ -159,56 +168,22 @@ class BottomSheetCacheWidget extends StatelessWidget {
         title: Text(title),
         actions: [
           TextButton(
-            child: Text(
-              AppLocalizations.of(context)!.commonYes,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            child: const Text(
+              'Yes',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
             onPressed: () => Navigator.of(context).pop(true),
           ),
           TextButton(
-            child: Text(
-              AppLocalizations.of(context)!.commonNo,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            child: const Text(
+              'No',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
             onPressed: () => Navigator.of(context).pop(false),
           ),
         ],
       ),
       context: context,
-    );
-  }
-}
-
-class _CacheActionBadge extends StatelessWidget {
-  const _CacheActionBadge({
-    required this.label,
-    required this.colorScheme,
-    required this.size,
-  });
-
-  final String label;
-  final ColorScheme colorScheme;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Center(
-        child: Text(
-          label,
-          style: TextStyle(
-            color: colorScheme.onPrimaryContainer,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-        ),
-      ),
     );
   }
 }

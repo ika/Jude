@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../l10n/app_localizations.dart';
 
 import '../bloc/bloc_theme.dart';
 
@@ -14,7 +13,6 @@ class ThemePage extends StatefulWidget {
 class ThemePageState extends State<ThemePage> {
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(
@@ -48,7 +46,7 @@ class ThemePageState extends State<ThemePage> {
           },
         ),
         title: Text(
-          loc.themeTitle,
+          'Theme Switcher',
           style: TextStyle(
             fontWeight: FontWeight.w700,
             color: Theme.of(context).colorScheme.onPrimary,
@@ -60,11 +58,11 @@ class ThemePageState extends State<ThemePage> {
           final isDark = themeState % 2 == 1;
           final themeIndex = themeState ~/ 2;
           final themeNames = [
-            loc.themeBlueDelight,
-            loc.themeAquaBlue,
-            loc.themePinkSakura,
-            loc.themeGreenForest,
-            loc.themeSepia,
+            'Blue Delight',
+            'Aqua Blue',
+            'Pink Sakura',
+            'Green Forest',
+            'Sepia',
           ];
 
           return Align(
@@ -131,7 +129,7 @@ class ThemePageState extends State<ThemePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(loc.themeLight),
+                      Text('Light'),
                       Switch(
                         value: isDark,
                         onChanged: (value) {
@@ -141,7 +139,7 @@ class ThemePageState extends State<ThemePage> {
                           );
                         },
                       ),
-                      Text(loc.themeDark),
+                      Text('Dart'),
                     ],
                   ),
                 ],

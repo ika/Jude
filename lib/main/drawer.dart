@@ -7,7 +7,6 @@ class MainDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -20,7 +19,7 @@ class MainDrawer extends StatelessWidget {
                 baseline: 80,
                 baselineType: TextBaseline.alphabetic,
                 child: Text(
-                  loc.drawerIndex,
+                  'Index',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.primary,
                     fontSize: 32,
@@ -40,7 +39,7 @@ class MainDrawer extends StatelessWidget {
               color: Theme.of(context).colorScheme.primary,
             ),
             title: Text(
-              loc.drawerBookmarks,
+              'Bookmarks',
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             dense: true,
@@ -68,7 +67,7 @@ class MainDrawer extends StatelessWidget {
               color: Theme.of(context).colorScheme.primary,
             ),
             title: Text(
-              loc.drawerHighlights,
+              'Highlights',
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             dense: true,
@@ -95,7 +94,7 @@ class MainDrawer extends StatelessWidget {
               Icons.keyboard_arrow_right,
               color: Theme.of(context).colorScheme.primary,
             ),
-            title: Text(loc.drawerSearch, style: Theme.of(context).textTheme.bodyLarge),
+            title: Text('Search', style: Theme.of(context).textTheme.bodyLarge),
             dense: true,
             onTap: () {
               Future.delayed(
@@ -117,7 +116,7 @@ class MainDrawer extends StatelessWidget {
               Icons.keyboard_arrow_right,
               color: Theme.of(context).colorScheme.primary,
             ),
-            title: Text(loc.drawerFonts, style: Theme.of(context).textTheme.bodyLarge),
+            title: Text('Fonts', style: Theme.of(context).textTheme.bodyLarge),
             dense: true,
             onTap: () {
               Future.delayed(
@@ -141,7 +140,7 @@ class MainDrawer extends StatelessWidget {
               Icons.keyboard_arrow_right,
               color: Theme.of(context).colorScheme.primary,
             ),
-            title: Text(loc.drawerTheme, style: Theme.of(context).textTheme.bodyLarge),
+            title: Text('Theme', style: Theme.of(context).textTheme.bodyLarge),
             dense: true,
             onTap: () {
               Future.delayed(
@@ -163,7 +162,7 @@ class MainDrawer extends StatelessWidget {
               Icons.keyboard_arrow_right,
               color: Theme.of(context).colorScheme.primary,
             ),
-            title: Text(loc.drawerAbout, style: Theme.of(context).textTheme.bodyLarge),
+            title: Text('About', style: Theme.of(context).textTheme.bodyLarge),
             dense: true,
             onTap: () {
               Future.delayed(
@@ -187,13 +186,13 @@ class MainDrawer extends StatelessWidget {
                 color: Theme.of(context).colorScheme.primary,
               ),
               title: Text(
-                loc.drawerShare,
+                'Share',
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               dense: true,
               onTap: () {
                 Navigator.pop(context);
-                _onShareLink(context);
+                _onShareLink();
               },
             ),
         ],
@@ -201,11 +200,11 @@ class MainDrawer extends StatelessWidget {
     );
   }
 
-  void _onShareLink(BuildContext context) async {
+  void _onShareLink() async {
     String uri =
-        'https://play.google.com/store/apps/details?id=org.armstrong.ika.${Constants.appName}';
+        'https://play.google.com/store/apps/details?id=org.armstrong.ika.galatians';
     await SharePlus.instance.share(
-      ShareParams(title: AppLocalizations.of(context)!.appTitle, uri: Uri.parse(uri)),
+      ShareParams(title: 'Galatians', uri: Uri.parse(uri)),
     );
   }
 }

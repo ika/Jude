@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:share_plus/share_plus.dart';
-import '../l10n/app_localizations.dart';
-import '../constants.dart';
 
+import '../constants.dart';
 import '../bloc/bloc_font.dart';
 import '../bloc/bloc_italic.dart';
 import '../bloc/bloc_scroll.dart';
@@ -17,11 +16,12 @@ import '../globals.dart';
 import './model.dart';
 import './queries.dart';
 
+
 part 'bottom.dart';
 
 part 'drawer.dart';
 
-// Revelation
+// Galatians
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -77,7 +77,6 @@ class MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
     return FutureBuilder<List<Main>>(
       future: _mainFuture,
       builder: (context, AsyncSnapshot<List<Main>> snapshot) {
@@ -117,7 +116,7 @@ class MainPageState extends State<MainPage> {
                 ),
               ),
               title: Text(
-                loc.appTitle,
+                Constants.appName,
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   color: Theme.of(context).colorScheme.onPrimary,
@@ -150,9 +149,6 @@ class MainPageState extends State<MainPage> {
                         text: paragraphs[index].t,
                         code: Globals.cacheSelector,
                       );
-
-                      //showPopupMenu(context, model);
-
                       showModalBottomSheet(
                         context: context,
                         isScrollControlled: true,
@@ -221,5 +217,27 @@ class MainPageState extends State<MainPage> {
         }
       }
     }
+  }
+}
+
+class BottomSheetDragHandle extends StatelessWidget {
+  const BottomSheetDragHandle({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const SizedBox(height: 8),
+        Container(
+          width: 40,
+          height: 4,
+          decoration: BoxDecoration(
+            color: Colors.black26,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(height: 8),
+      ],
+    );
   }
 }

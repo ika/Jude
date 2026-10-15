@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../l10n/app_localizations.dart';
 
 import '../bloc/bloc_font.dart';
 import '../bloc/bloc_italic.dart';
@@ -44,7 +43,6 @@ class SearchPageState extends State<SearchPage> {
   }
 
   Future emptyInputDialog(BuildContext context) async {
-    final loc = AppLocalizations.of(context)!;
     return showDialog<void>(
       context: context,
       barrierDismissible: true, // user must tap button!
@@ -59,13 +57,10 @@ class SearchPageState extends State<SearchPage> {
           },
         );
 
-        return AlertDialog(
+        return const AlertDialog(
           content: SingleChildScrollView(
             child: Center(
-              child: Text(
-                loc.searchEnterTextPrompt,
-                textAlign: TextAlign.center,
-              ),
+              child: Text('Enter a search text!', textAlign: TextAlign.center),
             ),
           ),
         );
@@ -159,7 +154,6 @@ class SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(
@@ -180,7 +174,7 @@ class SearchPageState extends State<SearchPage> {
           ),
         ),
         title: Text(
-          loc.searchTitle,
+          'Search',
           style: TextStyle(
             fontWeight: FontWeight.w700,
             color: Theme.of(context).colorScheme.onPrimary,
@@ -205,7 +199,7 @@ class SearchPageState extends State<SearchPage> {
               const SizedBox(height: 20),
               TextFormField(
                 decoration: InputDecoration(
-                  labelText: loc.searchPlaceholder,
+                  labelText: 'Search...',
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.search),
                     onPressed: () {
@@ -230,9 +224,6 @@ class SearchPageState extends State<SearchPage> {
                   builder: (context, AsyncSnapshot<List<Main>> snapshot) {
                     if (snapshot.hasData) {
                       list = snapshot.data!;
-                      if (submittedQuery.isNotEmpty && list.isEmpty) {
-                        return Center(child: Text(loc.searchNoResults));
-                      }
                       return ListView.separated(
                         itemCount: list.length,
                         itemBuilder: (BuildContext context, int index) {
